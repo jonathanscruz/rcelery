@@ -216,6 +216,30 @@ describe RCelery::Task do
       end
     end
 
+    it 'republishes a task properly if retries is missing' do
+      task = RCelery::Task.new(:ignore_result => false)
+      task.request.update(
+        :task_id => 'abcdefghijklmnopqrstuvwxyzasdfgh',
+        :args => [],
+        :kwargs => {'this' => 'that'}
+      )
+
+      eta = Time.at(Time.now + (60 * 3))
+
+      expected_options = {
+        :args => [],
+        :task_id => 'abcdefghijklmnopqrstuvwxyzasdfgh',
+        :kwargs => {'this' => 'that'},
+        :retries => 1,
+        :eta => eta
+      }
+      mock(task).apply_async(expected_options)
+      begin
+        task.retry(:eta => eta)
+      rescue RCelery::Task::RetryError
+      end
+    end
+
     it 'uses options passed to it before the request values' do
       task = RCelery::Task.new(:ignore_result => false)
       task.request.update(

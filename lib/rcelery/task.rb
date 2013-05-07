@@ -64,8 +64,9 @@ module RCelery
       args = options[:args] || request.args
       kwargs = options[:kwargs] || request.kwargs
       max_retries = options[:max_retries] || self.class.max_retries
+      retries = request.retries || 0
 
-      if (request.retries + 1) > max_retries
+      if retries >= max_retries
         if options[:exc]
           raise options[:exc]
         else
@@ -77,7 +78,7 @@ module RCelery
         :args => args,
         :kwargs => kwargs,
         :task_id => request.task_id,
-        :retries => request.retries + 1,
+        :retries => retries + 1,
         :eta => options[:eta] || default_eta
       )
 
